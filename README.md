@@ -21,3 +21,8 @@ A bucket list is a list of things you intend to achieve or experience.
 - Ensure your postgres is running on the right port(5432 by default). Create test and development database using `createdb database-name`
 - Run app with `flask run` or `python app.py`
 - Navigate to `http://localhost:5000/` or `http://127.0.0.1:5000/` on your browser
+
+### Database
+- Run `python manage.py db init` to create a migrations folder
+- Run `python manage.py db migrate` to create migrations
+- Run `python manage.py db upgrade` to apply the migrations to database
