@@ -9,7 +9,7 @@ class BaseConfig(object):
     SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL')
 
 
-class DevelopementConfig(BaseConfig):
+class DevelopmentConfig(BaseConfig):
     DEBUG = True
 
 
