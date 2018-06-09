@@ -1,8 +1,19 @@
+import sys
+sys.path.append("src")
 from models import BucketList
-from scr import app
-from flask import abort, jsonify, request
+from flask import Blueprint, abort, jsonify, request
 
-@app.route('/lists/', methods=['POST', 'GET'])
+bucketlist_blueprint = Blueprint('bucketlist', __name__)
+
+
+@bucketlist_blueprint.route('/', methods=['GET'])
+def homepage():
+    return jsonify({
+        "message": "Welcome to bucket list API"
+    })
+
+
+@bucketlist_blueprint.route('/lists/', methods=['POST', 'GET'])
 def create_bucketlists():
     if request.method == 'POST':
         name = str(request.data.get('name', ''))
