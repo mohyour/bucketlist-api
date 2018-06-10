@@ -30,6 +30,7 @@ class TestBucketList(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual('Travel the world', data[0]["name"])
 
+
     def test_get_bucketlist_by_id(self):
         """Get bucket by id"""
         bucket = self.client.post('/lists/', data=self.bucketlist)
@@ -37,6 +38,7 @@ class TestBucketList(unittest.TestCase):
         response = self.client.get('/lists/{}'.format(data["id"]))
         data = json.loads(response.data.decode())
         self.assertEqual(data["id"], 1)
+
 
     def test_edit_bucketlist(self):
         bucket = self.client.post('/lists/', data=self.bucketlist)
@@ -47,6 +49,7 @@ class TestBucketList(unittest.TestCase):
         self.assertEquals(response.status_code, 200)
         self.assertEqual(bucket_data["id"], data["id"])
         self.assertEqual(data["name"], "New edit - travel round the world")
+
 
     def test_delete_bucketlist(self):
         bucket = self.client.post('/lists/', data=self.bucketlist)
