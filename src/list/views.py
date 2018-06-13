@@ -1,9 +1,9 @@
+from . import bucketlist_blueprint
+
 import sys
 sys.path.append("src")
 from models import BucketList
 from flask import Blueprint, jsonify, request
-
-bucketlist_blueprint = Blueprint('bucketlist', __name__)
 
 
 def get_response_object(bucketlist):
