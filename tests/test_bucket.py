@@ -1,7 +1,7 @@
-import os
 import json
 import unittest
-from src import create_app, db, app
+from src import create_app, db
+
 
 class TestBucketList(unittest.TestCase):
     def setUp(self):

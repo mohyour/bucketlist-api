@@ -4,9 +4,10 @@ from sqlalchemy.orm import validates
 import jwt
 import re
 from datetime import datetime, timedelta
+from flask import current_app
 
 db = SQLAlchemy()
-print ('importing module {}'.format(__name__))
+
 class User(db.Model):
     __tablename__ = "users"
 
@@ -22,7 +23,7 @@ class User(db.Model):
         self.username = username
         self.password = Bcrypt().generate_password_hash(password).decode()
 
-    def valid_password(self, password):
+    def is_valid_password(self, password):
         return Bcrypt().check_password_hash(self.password, password)
 
     def save(self):

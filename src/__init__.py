@@ -12,7 +12,7 @@ def create_app(config_name):
     db.init_app(app) # connects app to db
 
     # register bucketlist
-    from src.list import bucketlist_blueprint
+    from src.bucketlist import bucketlist_blueprint
     app.register_blueprint(bucketlist_blueprint)
 
     # register user blueprint
