@@ -1,21 +1,13 @@
 import unittest
 import json
-from src import db, create_app
+from base import BaseTest
 
-
-class TestUserAuthentication(unittest.TestCase):
-    def setUp(self):
-        self.app = create_app("testing")
-        self.client = self.app.test_client()
-        self.user = {
+class TestUserAuthentication(BaseTest):
+    user = {
             "username": "moyosore",
             "email": "moyosore@gmail.com",
             "password": "my_password"
         }
-        with self.app.app_context():
-            db.session.close()
-            db.drop_all()
-            db.create_all()
 
     def test_user_signup(self):
         user = self.client.post('/auth/signup', data=self.user)
@@ -29,7 +21,7 @@ class TestUserAuthentication(unittest.TestCase):
         same_user = self.client.post('/auth/signup', data=self.user)
         same_user_data = json.loads(same_user.data.decode())
         self.assertEqual(same_user.status_code, 409)
-        self.assertEqual(same_user_data['message'], "User already exist.")
+        self.assertEqual(same_user_data['message'], "User already exists.")
 
     def test_user_signin(self):
         user = self.client.post('/auth/signup', data=self.user)
@@ -45,3 +37,6 @@ class TestUserAuthentication(unittest.TestCase):
         self.assertEqual(user.status_code, 401)
         response = json.loads(user.data.decode())
         self.assertEqual(response["message"], "Incorrect login details")
+
+if __name__ == "__main__":
+    unittest.main()
