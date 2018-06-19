@@ -29,7 +29,7 @@ class Signup(MethodView):
                 return jsonify(response), 401
         else:
             response = {
-                'message': 'User already exist.'
+                'message': 'User already exists.'
             }
 
             return jsonify(response), 409
@@ -43,8 +43,8 @@ class Signin(MethodView):
         password = request.data["password"]
         try:
             user = user = User.query.filter_by(email=request.data['email']).first()
-            if user and user.is_valid_password(password):
-                user_token = user.generate_token(user.id)
+            if user and user.is_valid_password(password=password):
+                user_token = user.generate_token(user_id=user.id)
                 response = {
                     "message": "You are now logged in",
                     "token": user_token.decode()

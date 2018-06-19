@@ -1,12 +1,11 @@
+import jwt
+import re
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from sqlalchemy.orm import validates
-import jwt
-import re
 from datetime import datetime, timedelta
 from flask import current_app
-
-db = SQLAlchemy()
+from src import db
 
 class User(db.Model):
     __tablename__ = "users"
@@ -16,7 +15,7 @@ class User(db.Model):
     email = db.Column(db.String(256), nullable=False, unique=True)
     password = db.Column(db.String(256), nullable=False)
     bucketlists = db.relationship(
-        'BucketList', order_by='BucketList.id', cascade="all, delete-orphan")
+        'BucketList', order_by='BucketList.id', backref='users', cascade="all, delete-orphan")
 
     def __init__(self, username, email, password):
         self.email = email
@@ -41,7 +40,7 @@ class User(db.Model):
         """ Generates user token"""
         try:
             payload = {
-                'exp': datetime.utcnow() + timedelta(minutes=30),
+                'exp': datetime.utcnow() + timedelta(hours=2),
                 'iat': datetime.utcnow(),
                 'sub': user_id
             }
@@ -53,21 +52,17 @@ class User(db.Model):
             return jwt_string
 
         except Exception as e:
-            # return an error in string format if an exception occurs
             return str(e)
 
     @staticmethod
     def decode_token(token):
         """Decodes the access token from the Authorization header."""
         try:
-            # try to decode the token using our SECRET variable
             payload = jwt.decode(token, current_app.config.get('SECRET'))
             return payload['sub']
         except jwt.ExpiredSignatureError:
-            # the token is expired, return an error string
             return "Expired token. Please login to get a new token"
         except jwt.InvalidTokenError:
-            # the token is invalid, return an error string
             return "Invalid token. Please register or login"
 
 
@@ -81,7 +76,7 @@ class BucketList(db.Model):
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(),
     onupdate=db.func.current_timestamp())
-    owner = db.Column(db.Integer, db.ForeignKey(User.id))
+    owner = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
     def __init__(self, name, owner):
         """Initialize with name and owner"""
@@ -99,7 +94,7 @@ class BucketList(db.Model):
         db.session.commit()
 
     @staticmethod
-    def get_all():
+    def get_all(user_id):
         """Get all bucketlist entries"""
         return BucketList.query.filter_by(owner=user_id)
 
