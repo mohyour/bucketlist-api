@@ -1,107 +1,117 @@
 from . import bucketlist_blueprint
+from flask.views import MethodView
 from flask import jsonify, request, make_response
 from src.models import BucketList, User
 
+
+def auth_required(f):
+    def decorated(*args, **kwargs):
+        try:
+            token = request.headers['Authorization'].split(" ")[1]
+            token_data = User.decode_token(token)
+            if type(token_data) != int:
+                return jsonify({
+                    "message": token_data
+                })
+            user_id = token_data
+        except:
+            return jsonify({'message': 'Please provide a valid token'})
+        return f(user_id, *args, **kwargs)
+    decorated.__name__ = f.__name__
+    return decorated
 
 def get_response_object(bucketlist):
     obj = {
         'id': bucketlist.id,
         'name': bucketlist.name,
+        'owner_id': bucketlist.owner,
         'created_at': bucketlist.created_at,
         'updated_at': bucketlist.updated_at
     }
     return obj
 
-
-@bucketlist_blueprint.route('/', methods=['GET'])
 def homepage():
     return jsonify({
         "message": "Welcome to bucket list API"
     }), 200
 
 
-@bucketlist_blueprint.route('/lists/', methods=['POST', 'GET'])
-def create_get_bucketlists():
-    try:
-        authorization = request.headers['Authorization']
-        try:
-            user_token = authorization.split(" ")[1]
-        except Exception as e:
-            return jsonify({
-                "message": "Check your token format"
-            }), 400
-        if user_token:
-            user_id = User.decode_token(user_token)
-            if not isinstance(user_id, str):
-                if request.method == 'POST':
-                    name = request.data["name"]
-                    if name:
-                        bucketlist = BucketList(name=name, owner=user_id)
-                        bucketlist.save()
-                        response = get_response_object(bucketlist)
-                        return make_response(jsonify(response)), 201
-                    else:
-                        return make_response(jsonify({
-                            "message": "enter bucketlist name"
-                        })), 400
-
-                else:
-                    bucketlists = BucketList.get_all(user_id)
-                    all_lists = []
-
-                    for bucketlist in bucketlists:
-                        obj = get_response_object(bucketlist)
-                        all_lists.append(obj)
-                    response = jsonify(all_lists)
-                    return make_response(response), 200
-            else:
-                return make_response(jsonify({
-                    "messgae": user_id
-                })), 400
-    except KeyError as e:
+@bucketlist_blueprint.route('/lists', methods=['POST'])
+@auth_required
+def create_bucketlists(user_id):
+    name = request.data["name"]
+    if name:
+        bucketlist = BucketList(name=name, owner=user_id)
+        bucketlist.save()
+        response = get_response_object(bucketlist)
+        return make_response(jsonify(response)), 201
+    else:
         return make_response(jsonify({
-            "message": "You need to be authorised"
-        })), 401
+            "message": "enter bucketlist name"
+        })), 400
 
-@bucketlist_blueprint.route("/lists/<int:id>", methods=["GET", "PUT", "DELETE"])
-def rud_bucketlist_by_id(id, **kwargs):
-    try:
-        authorization = request.headers['Authorization']
-        try:
-            user_token = authorization.split(" ")[1]
-        except Exception as e:
-            return jsonify({
-                "message": "Check your token format"
-            })
-        if user_token:
-            user_id = User.decode_token(user_token)
-        if not isinstance(user_id, str):
-            bucket = BucketList.query.filter_by(id=id).first()
-            if not bucket:
-                return jsonify({
-                    "message": "Bucket list not found"
-                }), 404
-            
-            if request.method == "GET":
-                return jsonify(get_response_object(bucket)), 200
-                
-            if request.method == "DELETE":
-                bucket.delete()
-                return jsonify({
-                    "message": "Bucket list successfully deleted"
-                }), 200
 
-            if request.method == "PUT":
-                name = str(request.data.get('name', ''))
-                bucket.name = name
-                bucket.save()
-                return jsonify(get_response_object(bucket)), 200
-        else:
-                return make_response(jsonify({
-                    "messgae": user_id
-                }))
+@bucketlist_blueprint.route('/lists', methods=['GET'])
+@auth_required
+def get_bucketlists(user_id):
+    bucketlists = BucketList.get_all(user_id)
+    all_lists = []
 
-    except KeyError as e:
-        return make_response(jsonify({
-            "message": "You need to be authorised"
-        })), 401
+    for bucketlist in bucketlists:
+        obj = get_response_object(bucketlist)
+        all_lists.append(obj)
+    response = jsonify(all_lists)
+    return make_response(response), 200
+
+
+@bucketlist_blueprint.route("/lists/<int:id>", methods=["GET"])
+@auth_required
+def get_by_id(user_id, id):
+    bucket = BucketList.query.filter_by(id=id).first()
+    if not bucket:
+        return jsonify({
+            "message": "Bucket list not found"
+        }), 404
+    return jsonify(get_response_object(bucket)), 200
+
+
+@bucketlist_blueprint.route("/lists/<int:id>", methods=["PUT"])
+@auth_required
+def edit_by_id(user_id, id):
+    bucket = BucketList.query.filter_by(id=id).first()
+    if bucket == None:
+        return jsonify({
+            "message": "Bucket list not found"
+        }), 404
+
+    if bucket.owner == user_id:
+            name = str(request.data.get('name', ''))
+            bucket.name = name
+            bucket.save()
+            return jsonify(get_response_object(bucket)), 200
+    else:
+        return jsonify({
+            "message": "You cannot edit another user's bucketlist"
+        }), 401
+        
+
+
+@bucketlist_blueprint.route("/lists/<int:id>", methods=["DELETE"])
+@auth_required
+def delete_by_id(user_id, id):
+    bucket = BucketList.query.filter_by(id=id).first()
+    if not bucket:
+        return jsonify({
+            "message": "Bucket list not found"
+        }), 404
+
+    if bucket.owner == user_id:
+        bucket.delete()
+        return jsonify({
+            "message": "Bucket list successfully deleted"
+        }), 200
+    else:
+        return jsonify({
+            "message": "You cannot delete another user's bucketlist"
+        }), 401
+    

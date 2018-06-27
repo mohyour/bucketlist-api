@@ -25,7 +25,7 @@ class BucketlistTestCase(BaseTest):
         return self.client.post('/auth/signin', data=user_data)
     
     def create_bucketlist(self, bucketlist, token):
-        return self.client.post('/lists/',
+        return self.client.post('/lists',
                 headers=dict(Authorization="Bearer " + token),
                 data=bucketlist)
 
@@ -46,7 +46,7 @@ class BucketlistTestCase(BaseTest):
         res = self.create_bucketlist(self.bucketlist, access_token)
         self.assertEqual(res.status_code, 201)
         res = self.client.get(
-            '/lists/',
+            '/lists',
             headers=dict(Authorization="Bearer " + access_token),
         )
         self.assertEqual(res.status_code, 200)

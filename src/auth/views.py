@@ -2,14 +2,24 @@ from . import auth_blueprint
 from flask.views import MethodView
 from flask import make_response, request, jsonify
 from src.models import User
+import sqlalchemy
 
 
 class Signup(MethodView):
     """Registers new user."""
     def post(self):
-        email = request.data['email']
-        password = request.data['password']
-        username = request.data['username']
+        try:
+            email = request.data['email']
+            password = request.data['password']
+            username = request.data['username']
+            if not username:
+                return jsonify({
+                    'message': 'username cannot be empty'
+                })
+        except KeyError:
+            return jsonify({
+                "message": "Check payload. username, email and password are needed"
+            })
 
         user = User.query.filter_by(email=email).first()
 
@@ -22,11 +32,15 @@ class Signup(MethodView):
                     'message': 'You registered successfully.'
                 }
                 return jsonify(response), 201
-            except Exception as e:
+            except AssertionError as e:
                 response = {
-                    'message': str(e)
+                    'message': "Invalid email"
                 }
                 return jsonify(response), 401
+            except sqlalchemy.exc.IntegrityError as e:
+                    return({
+                        "message": "Username already exist"
+                    }), 400
         else:
             response = {
                 'message': 'User already exists.'
@@ -38,9 +52,13 @@ class Signup(MethodView):
 class Signin(MethodView):
     """Sign in user"""
     def post(self):
-        username = request.data["username"]
-        email = request.data['email']
-        password = request.data["password"]
+        try:
+            email = request.data['email']
+            password = request.data["password"]
+        except KeyError:
+            return jsonify({
+                "message": "Check payload. username, email and password are needed"
+            })
         try:
             user = user = User.query.filter_by(email=request.data['email']).first()
             if user and user.is_valid_password(password=password):
