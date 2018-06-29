@@ -25,11 +25,10 @@ def test():
 @manager.command
 def seed_db():
     """Seeds the database."""
-    username = os.getenv('USERNAME')
     password = os.getenv('PASSWORD')
     email = os.getenv('EMAIL')
     bucket = os.getenv('BUCKETLIST')
-    user = User(username=username, email=email, password=password)
+    user = User(email=email, password=password)
     user.save()
     bucketlist = BucketList(name=bucket, owner=user.id)
     bucketlist.save()

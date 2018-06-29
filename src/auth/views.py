@@ -9,57 +9,46 @@ class Signup(MethodView):
     """Registers new user."""
     def post(self):
         try:
-            email = request.data['email']
-            password = request.data['password']
-            username = request.data['username']
-            if not username:
-                return jsonify({
-                    'message': 'username cannot be empty'
-                })
-        except KeyError:
-            return jsonify({
-                "message": "Check payload. username, email and password are needed"
-            })
+            email = request.data['email'].strip()
+            password = request.data['password'].strip()
 
-        user = User.query.filter_by(email=email).first()
+            if not password:
+                response = {
+                        'message': 'Password cannot be empty.'
+                    }
+                return jsonify(response), 201
+            user = User.query.filter_by(email=email).first()
 
-        if not user:
-            try:
-                user = User(username=username, email=email, password=password)
+            if not user:
+                user = User(email=email, password=password)
                 user.save()
 
                 response = {
                     'message': 'You registered successfully.'
                 }
                 return jsonify(response), 201
-            except AssertionError as e:
+            else:
                 response = {
-                    'message': "Invalid email"
+                    'message': 'User already exist.'
                 }
-                return jsonify(response), 401
-            except sqlalchemy.exc.IntegrityError as e:
-                    return({
-                        "message": "Username already exist"
-                    }), 400
-        else:
-            response = {
-                'message': 'User already exists.'
-            }
-
-            return jsonify(response), 409
-
+                return jsonify(response), 409
+        except AssertionError as e:
+                    response = {
+                        'message': "Invalid email"
+                    }
+                    return jsonify(response), 401
+        except KeyError:
+            return jsonify({
+                "message": "Check payload. email and password are needed"
+            })
 
 class Signin(MethodView):
     """Sign in user"""
     def post(self):
         try:
-            email = request.data['email']
-            password = request.data["password"]
-        except KeyError:
-            return jsonify({
-                "message": "Check payload. username, email and password are needed"
-            })
-        try:
+            email = request.data['email'].strip()
+            password = request.data["password"].strip()
+      
             user = user = User.query.filter_by(email=request.data['email']).first()
             if user and user.is_valid_password(password=password):
                 user_token = user.generate_token(user_id=user.id)
@@ -73,6 +62,11 @@ class Signin(MethodView):
                     "message": "Incorrect login details"
                 }
                 return jsonify(response), 401
+
+        except KeyError:
+            return jsonify({
+                "message": "Check payload. email and password are needed"
+            })
 
         except Exception as e:
             response = {

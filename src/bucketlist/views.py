@@ -2,14 +2,16 @@ from . import bucketlist_blueprint
 from flask.views import MethodView
 from flask import jsonify, request, make_response
 from src.models import BucketList, User
+from functools import wraps
 
 
 def auth_required(f):
+    @wraps(f)
     def decorated(*args, **kwargs):
         try:
             token = request.headers['Authorization'].split(" ")[1]
             token_data = User.decode_token(token)
-            if type(token_data) != int:
+            if token_data != int(token_data):
                 return jsonify({
                     "message": token_data
                 })
@@ -17,7 +19,6 @@ def auth_required(f):
         except:
             return jsonify({'message': 'Please provide a valid token'})
         return f(user_id, *args, **kwargs)
-    decorated.__name__ = f.__name__
     return decorated
 
 def get_response_object(bucketlist):
@@ -39,16 +40,21 @@ def homepage():
 @bucketlist_blueprint.route('/lists', methods=['POST'])
 @auth_required
 def create_bucketlists(user_id):
-    name = request.data["name"]
-    if name:
-        bucketlist = BucketList(name=name, owner=user_id)
-        bucketlist.save()
-        response = get_response_object(bucketlist)
-        return make_response(jsonify(response)), 201
-    else:
-        return make_response(jsonify({
-            "message": "enter bucketlist name"
-        })), 400
+    try:
+        name = request.data["name"].strip()
+        if name:
+            bucketlist = BucketList(name=name, owner=user_id)
+            bucketlist.save()
+            response = get_response_object(bucketlist)
+            return make_response(jsonify(response)), 201
+        else:
+            return make_response(jsonify({
+                "message": "Bucketlist name cannot be empty"
+            })), 400
+    except KeyError:
+        return(jsonify({
+            "message": "Check payload. Bucketlist name is needed"
+        }))
 
 
 @bucketlist_blueprint.route('/lists', methods=['GET'])

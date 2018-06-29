@@ -11,15 +11,13 @@ class User(db.Model):
     __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(128), nullable=False, unique=True)
     email = db.Column(db.String(256), nullable=False, unique=True)
     password = db.Column(db.String(256), nullable=False)
     bucketlists = db.relationship(
         'BucketList', order_by='BucketList.id', backref='users', cascade="all, delete-orphan")
 
-    def __init__(self, username, email, password):
+    def __init__(self, email, password):
         self.email = email
-        self.username = username
         self.password = Bcrypt().generate_password_hash(password).decode()
 
     def is_valid_password(self, password):

@@ -4,7 +4,6 @@ from base import BaseTest
 
 class TestUserAuthentication(BaseTest):
     user = {
-            "username": "moyosore",
             "email": "moyosore@gmail.com",
             "password": "my_password"
         }
@@ -21,7 +20,7 @@ class TestUserAuthentication(BaseTest):
         same_user = self.client.post('/auth/signup', data=self.user)
         same_user_data = json.loads(same_user.data.decode())
         self.assertEqual(same_user.status_code, 409)
-        self.assertEqual(same_user_data['message'], "User already exists.")
+        self.assertEqual(same_user_data['message'], "User already exist.")
 
     def test_user_signin(self):
         user = self.client.post('/auth/signup', data=self.user)

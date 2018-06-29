@@ -8,17 +8,15 @@ class BucketlistTestCase(BaseTest):
     """This class represents the bucketlist test case"""
     bucketlist = {'name': 'Travel to Hawai for vacation'}
 
-    def register_user(self, username="test", email="user@test.com", password="test1234"):
+    def register_user(self, email="user@test.com", password="test1234"):
         user_data = {
-            'username': username,
             'email': email,
             'password': password
         }
         return self.client.post('/auth/signup', data=user_data)
 
-    def login_user(self, username="test", email="user@test.com", password="test1234"):
+    def login_user(self, email="user@test.com", password="test1234"):
         user_data = {
-            'username': username,
             'email': email,
             'password': password
         }
