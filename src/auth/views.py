@@ -1,12 +1,13 @@
 from . import auth_blueprint
 from flask.views import MethodView
-from flask import make_response, request, jsonify
+from flask import request, jsonify
 from src.models import User
 import sqlalchemy
 
 
 class Signup(MethodView):
     """Registers new user."""
+
     def post(self):
         try:
             email = request.data['email'].strip()
@@ -14,8 +15,8 @@ class Signup(MethodView):
 
             if not password:
                 response = {
-                        'message': 'Password cannot be empty.'
-                    }
+                    'message': 'Password cannot be empty.'
+                }
                 return jsonify(response), 201
             user = User.query.filter_by(email=email).first()
 
@@ -33,23 +34,26 @@ class Signup(MethodView):
                 }
                 return jsonify(response), 409
         except AssertionError as e:
-                    response = {
-                        'message': "Invalid email"
-                    }
-                    return jsonify(response), 401
+            response = {
+                'message': "Invalid email"
+            }
+            return jsonify(response), 401
         except KeyError:
             return jsonify({
                 "message": "Check payload. email and password are needed"
             })
 
+
 class Signin(MethodView):
     """Sign in user"""
+
     def post(self):
         try:
             email = request.data['email'].strip()
             password = request.data["password"].strip()
-      
-            user = user = User.query.filter_by(email=request.data['email']).first()
+
+            user = user = User.query.filter_by(
+                email=request.data['email']).first()
             if user and user.is_valid_password(password=password):
                 user_token = user.generate_token(user_id=user.id)
                 response = {

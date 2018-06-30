@@ -29,6 +29,7 @@ class ProductionConfig(BaseConfig):
     DEBUG = False
     TESTING = False
 
+
 # Dictionary to hold and export all configuraion class
 app_config = {
     'development': DevelopmentConfig,
