@@ -17,7 +17,6 @@ class TestingConfig(BaseConfig):
     """Test Configuration"""
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'postgresql://localhost/test_bucket_db'
-    DEBUG = True
 
 
 class StagingConfig(BaseConfig):
@@ -29,6 +28,7 @@ class ProductionConfig(BaseConfig):
     """Production Configuration"""
     DEBUG = False
     TESTING = False
+
 
 # Dictionary to hold and export all configuraion class
 app_config = {
