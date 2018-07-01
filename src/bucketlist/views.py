@@ -95,7 +95,7 @@ def get_by_id(user_id, id):
     if not bucket:
         response = {
             "message": "Bucket list not found"
-        }, 404
+        }
         return jsonify(response), 404
     response = get_response_object(bucket)
     return jsonify(response), 200

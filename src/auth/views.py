@@ -39,9 +39,10 @@ class Signup(MethodView):
             }
             return jsonify(response), 401
         except KeyError:
-            return jsonify({
+            response = {
                 "message": "Check payload. email and password are needed"
-            })
+            }
+            return jsonify(response), 400
 
 
 class Signin(MethodView):
@@ -68,9 +69,10 @@ class Signin(MethodView):
                 return jsonify(response), 401
 
         except KeyError:
-            return jsonify({
+            response = {
                 "message": "Check payload. email and password are needed"
-            })
+            }
+            return jsonify(response), 400
 
         except Exception as e:
             response = {
