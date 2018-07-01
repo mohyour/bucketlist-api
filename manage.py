@@ -12,6 +12,7 @@ manager = Manager(app)
 
 manager.add_command('db', MigrateCommand)
 
+
 @manager.command
 def test():
     """Runs the unit tests without test coverage."""
@@ -25,14 +26,14 @@ def test():
 @manager.command
 def seed_db():
     """Seeds the database."""
-    username = os.getenv('USERNAME')
     password = os.getenv('PASSWORD')
     email = os.getenv('EMAIL')
     bucket = os.getenv('BUCKETLIST')
-    user = User(username=username, email=email, password=password)
+    user = User(email=email, password=password)
     user.save()
     bucketlist = BucketList(name=bucket, owner=user.id)
     bucketlist.save()
+
 
 if __name__ == "__main__":
     manager.run()

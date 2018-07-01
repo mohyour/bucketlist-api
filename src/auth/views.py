@@ -1,48 +1,59 @@
 from . import auth_blueprint
 from flask.views import MethodView
-from flask import make_response, request, jsonify
+from flask import request, jsonify
 from src.models import User
+import sqlalchemy
 
 
 class Signup(MethodView):
     """Registers new user."""
+
     def post(self):
-        email = request.data['email']
-        password = request.data['password']
-        username = request.data['username']
+        try:
+            email = request.data['email'].strip()
+            password = request.data['password'].strip()
 
-        user = User.query.filter_by(email=email).first()
+            if not password:
+                response = {
+                    'message': 'Password cannot be empty.'
+                }
+                return jsonify(response), 201
+            user = User.query.filter_by(email=email).first()
 
-        if not user:
-            try:
-                user = User(username=username, email=email, password=password)
+            if not user:
+                user = User(email=email, password=password)
                 user.save()
 
                 response = {
                     'message': 'You registered successfully.'
                 }
                 return jsonify(response), 201
-            except Exception as e:
+            else:
                 response = {
-                    'message': str(e)
+                    'message': 'User already exist.'
                 }
-                return jsonify(response), 401
-        else:
+                return jsonify(response), 409
+        except AssertionError as e:
             response = {
-                'message': 'User already exists.'
+                'message': "Invalid email"
             }
-
-            return jsonify(response), 409
+            return jsonify(response), 401
+        except KeyError:
+            return jsonify({
+                "message": "Check payload. email and password are needed"
+            })
 
 
 class Signin(MethodView):
     """Sign in user"""
+
     def post(self):
-        username = request.data["username"]
-        email = request.data['email']
-        password = request.data["password"]
         try:
-            user = user = User.query.filter_by(email=request.data['email']).first()
+            email = request.data['email'].strip()
+            password = request.data["password"].strip()
+
+            user = user = User.query.filter_by(
+                email=request.data['email']).first()
             if user and user.is_valid_password(password=password):
                 user_token = user.generate_token(user_id=user.id)
                 response = {
@@ -55,6 +66,11 @@ class Signin(MethodView):
                     "message": "Incorrect login details"
                 }
                 return jsonify(response), 401
+
+        except KeyError:
+            return jsonify({
+                "message": "Check payload. email and password are needed"
+            })
 
         except Exception as e:
             response = {

@@ -30,7 +30,6 @@ Activate your .env file by typing `source .env` in the commandline
 
 You can seed data into the database by running `python manage.py seed_db`. Ensure the required data has been included in the .env file as follows
 
-      export USERNAME="<your-username>"
       export PASSWORD="<your-password>"
       export EMAIL="your-email"
       export BUCKETLIST="<your-bucketlist>"
@@ -56,3 +55,13 @@ Bucketlist:
 |/lists/:id	|GET	| Get a single bucketlist |
 |/lists/:id	|PUT	| Update a single bucketlist |
 |/lists/:id	|DELETE| Delete a single bucketlist |
+
+
+Authentication:
+- Create a user from the auth/signup route
+- Sign in from the auth/sign in route
+- Put token generated in the header with key `Authorization`. Token should be in this format:
+`Bearer <auth token>`
+```
+Bearer jyFghGsvdfDDf636svkltdEmjfvuydrgchtsds43BsfvNKsfdsKKOHshds
+```
